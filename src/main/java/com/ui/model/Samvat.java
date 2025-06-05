@@ -1,0 +1,82 @@
+package com.ui.model;
+
+public class Samvat {
+
+	// Constructor with all fields
+	public Samvat(int samvatId, String samvatName, String description, String status, int createdBy, String createdDate,
+			String ipAddress) {
+		this.samvatId = samvatId;
+		this.samvatName = samvatName;
+		this.description = description;
+		this.status = status;
+		this.createdBy = createdBy;
+		this.createdDate = createdDate;
+		this.ipAddress = ipAddress;
+	}
+
+	// Properties
+	private int samvatId;
+	private String samvatName;
+	private String description;
+	private String status;
+	private int createdBy;
+	private String createdDate;
+	private String ipAddress;
+
+	// Getters and Setters
+	public int getSamvatId() {
+		return samvatId;
+	}
+
+	public void setSamvatId(int samvatId) {
+		this.samvatId = samvatId;
+	}
+
+	public String getSamvatName() {
+		return samvatName;
+	}
+
+	public void setSamvatName(String samvatName) {
+		this.samvatName = samvatName;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public int getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(int createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public String getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(String createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public String getIpAddress() {
+		return ipAddress;
+	}
+
+	public void setIpAddress(String ipAddress) {
+		this.ipAddress = ipAddress;
+	}
+}

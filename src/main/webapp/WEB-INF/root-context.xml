@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	<bean id="springDataSource"
+		class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+
+		<property name="driverClassName"
+			value="com.mysql.cj.jdbc.Driver" />
+		<property name="url"
+			value="jdbc:mysql://localhost:3306/Kuberbhandari" />
+		<property name="username" value="root" />
+		<property name="password" value="root@123" />
+
+		<property name="maxIdle" value="100" />
+		<property name="minIdle" value="10" />
+		<property name="validationQuery" value="select curdate()" />
+		<property name="removeAbandoned" value="true" />
+		<property name="initialSize" value="20" />
+		<property name="maxActive" value="30" />
+	</bean>
+	<bean id="countryDAO" class="com.ui.impl.CountryDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="genderDAO" class="com.ui.impl.GenderDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="loginDAO" class="com.ui.impl.LoginDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="pagesDAO" class="com.ui.impl.PagesDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="rolePagePermissionDAO"
+		class="com.ui.impl.RolePagePermissionDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="trusteeTypeDAO" class="com.ui.impl.TrusteeTypeDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="userAddressDAO" class="com.ui.impl.UserAddressDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="userDAO" class="com.ui.impl.UserDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="userRoleDAO" class="com.ui.impl.UserRoleDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="userTitleDAO" class="com.ui.impl.UserTitleDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="userTypeDAO" class="com.ui.impl.UserTypeDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="sevaTypeDAO" class="com.ui.impl.SevaTypeDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="sevaCategoryDAO" class="com.ui.impl.SevaCategoryDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="variationDAO" class="com.ui.impl.VariationDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="frequencyDAO" class="com.ui.impl.FrequencyDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="sevaDAO" class="com.ui.impl.SevaDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="sevaImagesDAO" class="com.ui.impl.SevaImagesDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="cartDAO" class="com.ui.impl.CartDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="orderDetailsDAO" class="com.ui.impl.OrderDetailsDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="dailyDarshanDAO" class="com.ui.impl.DailyDarshanDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="dailyDarshanImagesDAO"
+		class="com.ui.impl.DailyDarshanImagesDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="eventsDAO" class="com.ui.impl.EventsDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="eventsImagesDAO" class="com.ui.impl.EventsImagesDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="galleryDAO" class="com.ui.impl.GalleryDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="galleryImagesDAO" class="com.ui.impl.GalleryImagesDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="festivalDAO" class="com.ui.impl.FestivalDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="samvatDAO" class="com.ui.impl.SamvatDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="hinduPakshDAO" class="com.ui.impl.HinduPakshDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="hinduYearDAO" class="com.ui.impl.HinduYearDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="hinduMonthDAO" class="com.ui.impl.HinduMonthDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="hinduTithiDAO" class="com.ui.impl.HinduTithiDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="hinduMonthTypeDAO" class="com.ui.impl.HinduMonthTypeDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+	<bean id="importantDatesDAO" class="com.ui.impl.ImportantDatesDAOImpl">
+		<property name="dataSource" ref="springDataSource"></property>
+	</bean>
+</beans>
