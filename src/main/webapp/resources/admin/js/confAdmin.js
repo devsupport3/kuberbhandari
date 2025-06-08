@@ -1,11 +1,7 @@
-var app = angular.module("kuberbhandari", []);
+var app = angular.module("kuberbhandari", ['ngAnimate', 'toaster','chieffancypants.loadingBar']);
 
-var baseUrl = "/Kuberbhandari/";
-var url = "/Kuberbhandari/";
-var adminUrl = "/Kuberbhandari/manageKuberbhandari/";
-
-// var url = "/";
-//var adminurl = "/manageKuberbhandari/";
+var url = "/kuberbhandari/";
+var adminUrl = "/kuberbhandari/manageKuberbhandari/";
 
 /* For Print data with html tag start */
 app.filter('to_trusted', ['$sce', function($sce) {
@@ -2049,10 +2045,10 @@ app.controller('cartCtrl', function($scope, $http, $window, $filter, $location, 
 					$http.get(baseUrl + "check-delivery-enabled")
 						.then(function(deliveryResponse) {
 							if (deliveryResponse.data) {
-								$window.location.href = $location.protocol() + "://" + location.host + "/Kuberbhandari/delivery-address";
+								$window.location.href = $location.protocol() + "://" + location.host + url + "delivery-address";
 
 							} else {
-								$window.location.href = $location.protocol() + "://" + location.host + "/Kuberbhandari/order-summary";
+								$window.location.href = $location.protocol() + "://" + location.host + url + "order-summary";
 
 							}
 						})
@@ -2062,7 +2058,7 @@ app.controller('cartCtrl', function($scope, $http, $window, $filter, $location, 
 						});
 				} else {
 					// User is not logged in, redirect to checkout page
-					$window.location.href = $location.protocol() + "://" + location.host + "/Kuberbhandari/checkout";
+					$window.location.href = $location.protocol() + "://" + location.host + url + "checkout";
 				}
 			})
 			.catch(function(error) {
@@ -2077,7 +2073,7 @@ app.controller('cartCtrl', function($scope, $http, $window, $filter, $location, 
 				if (response.status === 200) {
 					cartService.addItem(response.data);
 
-					$window.location.href = $location.protocol() + "://" + location.host + "/Kuberbhandari/";
+					$window.location.href = $location.protocol() + "://" + location.host + url;
 				}
 			})
 			.catch(function(error) {
@@ -2086,7 +2082,7 @@ app.controller('cartCtrl', function($scope, $http, $window, $filter, $location, 
 	};
 
 	$scope.continuePayment = function() {
-		$window.location.href = $location.protocol() + "://" + location.host + "/Kuberbhandari/payment-option";
+		$window.location.href = $location.protocol() + "://" + location.host + url + "payment-option";
 	};
 });
 
@@ -2127,9 +2123,9 @@ app.controller('checkoutCtrl', function($scope, $http, $window, $filter, $locati
 				$http.get(baseUrl + "check-delivery-enabled")
 					.then(function(deliveryResponse) {
 						if (deliveryResponse.data) {
-							$window.location.href = $location.protocol() + "://" + location.host + "/Kuberbhandari/delivery-address";
+							$window.location.href = $location.protocol() + "://" + location.host + url + "delivery-address";
 						} else {
-							$window.location.href = $location.protocol() + "://" + location.host + "/Kuberbhandari/order-summary";
+							$window.location.href = $location.protocol() + "://" + location.host + url + "order-summary";
 						}
 					})
 					.catch(function(error) {
@@ -2169,9 +2165,9 @@ app.controller('checkoutCtrl', function($scope, $http, $window, $filter, $locati
 					$http.get(baseUrl + "check-delivery-enabled")
 						.then(function(deliveryResponse) {
 							if (deliveryResponse.data) {
-								$window.location.href = $location.protocol() + "://" + location.host + "/Kuberbhandari/delivery-address";
+								$window.location.href = $location.protocol() + "://" + location.host + url + "delivery-address";
 							} else {
-								$window.location.href = $location.protocol() + "://" + location.host + "/Kuberbhandari/order-summary";
+								$window.location.href = $location.protocol() + "://" + location.host + url + "order-summary";
 							}
 						})
 						.catch(function(error) {
@@ -2234,9 +2230,9 @@ app.controller('checkoutCtrl', function($scope, $http, $window, $filter, $locati
 					$http.get(baseUrl + "check-delivery-enabled")
 						.then(function(deliveryResponse) {
 							if (deliveryResponse.data) {
-								$window.location.href = $location.protocol() + "://" + location.host + "/Kuberbhandari/delivery-address";
+								$window.location.href = $location.protocol() + "://" + location.host + url + "delivery-address";
 							} else {
-								$window.location.href = $location.protocol() + "://" + location.host + "/Kuberbhandari/order-summary";
+								$window.location.href = $location.protocol() + "://" + location.host + url + "order-summary";
 							}
 						})
 						.catch(function(error) {
@@ -2335,7 +2331,7 @@ app.controller('deliveryAddressCtrl', function($scope, $http, $window, $filter, 
 	// Select an address and proceed to order summary
 	$scope.selectAddress = function(userAddressId) {
 		$scope.userAddressId = userAddressId;
-		$window.location.href = $location.protocol() + "://" + location.host + "/Kuberbhandari/order-summary?userAddressId=" + userAddressId;
+		$window.location.href = $location.protocol() + "://" + location.host + url + "order-summary?userAddressId=" + userAddressId;
 
 	};
 
@@ -6611,7 +6607,7 @@ app.controller('SidebarController', function($scope, $http, $window, pagePermiss
 /***************************************Admin Header  *****************************************/
 app.controller('headerCtrl', function($scope, $http, $window, $location) {
 
-	/*	var baseUrl = $location.protocol() + "://" + $location.host() + ":" + $location.port() + "/Kuberbhandari/manageKuberbhandari/";
+	/*	var baseUrl = $location.protocol() + "://" + $location.host() + ":" + $location.port() + url + "manageKuberbhandari/";
 	*/
 	$scope.logout = function() {
 		var link = adminUrl + 'admin-logout';

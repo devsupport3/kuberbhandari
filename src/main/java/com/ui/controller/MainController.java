@@ -278,23 +278,6 @@ public class MainController {
 		return "admin/admin_login";
 	}
 
-	/*
-	 * @GetMapping("/manageKuberbhandari/forgotPassword") public String
-	 * adminForgotPassword(Locale locale, Model model, SitePreference
-	 * sitePreference, HttpSession session) { return "admin/forgot_password";
-	 * 
-	 * }
-	 */
-
-	/*
-	 * @GetMapping("/manageKuberbhandari/changePassword") public String
-	 * adminChangePassword(Locale locale, Model model, SitePreference
-	 * sitePreference, HttpSession session) { if (session.getAttribute("userid") !=
-	 * null) { return "admin/change_password"; } return "admin_dashboard";
-	 * 
-	 * }
-	 */
-
 	@GetMapping("/manageKuberbhandari/admin-dashboard")
 	public String adminHome(Locale locale, Model model, HttpSession session) {
 		logger.info("Admin dashboard accessed.");

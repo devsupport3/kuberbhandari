@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -248,7 +249,7 @@ public class LoginController {
 
 	/***************** Admin ************************************/
 
-	@PostMapping("/manageKuberbhandari/admin-login")
+/*	@PostMapping("/manageKuberbhandari/admin-login")
 	public ResponseEntity<Map<String, Object>> adminLogin(@RequestParam String email, @RequestParam String password,
 			HttpSession session) {
 
@@ -277,37 +278,40 @@ public class LoginController {
 		}
 		return ResponseEntity.ok(response);
 	}
+	*/
+	
+	@PostMapping("/manageKuberbhandari/admin-login")
+	public ResponseEntity<Map<String, Object>> adminLogin(@RequestBody User loginRequest, HttpSession session) {
+	    String email = loginRequest.getEmailId();
+	    String password = loginRequest.getPassword();
+	    boolean isValidAdminUser = loginDAO.isValidAdminUser(email, password);
 
-	/*
-	 * @PostMapping("/manageKuberbhandari/admin-change-password") public String
-	 * adminChangePassword(@RequestParam String email, @RequestParam String
-	 * currentPassword,
-	 * 
-	 * @RequestParam String newPassword, @RequestParam String confirmPassword) {
-	 * 
-	 * if (!newPassword.equals(confirmPassword)) { return
-	 * "New password and confirm password do not match."; }
-	 * 
-	 * // Call the existing method from the DAO to change the password String result
-	 * = loginDAO.changePassword(email, currentPassword, newPassword,
-	 * confirmPassword);
-	 * 
-	 * return result; // Return the response from the DAO method }
-	 */
+		Map<String, Object> response = new HashMap<>();
 
-	/*
-	 * @PostMapping("/manageKuberbhandari/admin-forgot-password") public String
-	 * adminForgotPassword(@RequestParam String email, @RequestParam String
-	 * newPassword) {
-	 * 
-	 * boolean isPasswordReset = loginDAO.resetPassword(email, newPassword);
-	 * 
-	 * if (isPasswordReset) { return "Your password has been reset successfully."; }
-	 * else { return
-	 * "The email address is not registered or there was an issue resetting the password."
-	 * ; } }
-	 */
+		if (isValidAdminUser) {
+			User user = loginDAO.getUserDetail(email);
+			if (user.getRoleId() != UserRoleEnum.user.getValue()) {
+				List<RolePagePermission> rolePagePermission = rolePagePermissionDAO
+						.getPermissionsByRole(user.getRoleId());
+				session.setAttribute("adminUser", user);
+				session.setAttribute("adminUserRolePagePermission", rolePagePermission);
+				session.setAttribute("adminUserName", user.getFirstName() + " " + user.getLastName());
+				session.setAttribute("adminLoginUserId", user.getUserId());
+				response.put("status", true);
+				response.put("message", "Login successful!");
+			} else {
+				response.put("status", false);
+				response.put("message", "Access denied: You do not have permission to log in here.");
+			}
+		} else {
+			response.put("status", false);
+			response.put("message", "Invalid username or password");
+		}
+		return ResponseEntity.ok(response);
+	}
+	
 
+	
 	@PostMapping("/manageKuberbhandari/admin-logout")
 	public boolean adminLogout(HttpSession session) {
 		session.invalidate();

@@ -13,7 +13,7 @@
 		<property name="url"
 			value="jdbc:mysql://localhost:3306/Kuberbhandari" />
 		<property name="username" value="root" />
-		<property name="password" value="root@123" />
+		<property name="password" value="root" />
 
 		<property name="maxIdle" value="100" />
 		<property name="minIdle" value="10" />

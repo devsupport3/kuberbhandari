@@ -4,21 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login</title>
-
-<script
-	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
-	
-<!-- Bootstrap CSS -->
-<link
-	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-	rel="stylesheet">
-<link
-	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-	rel="stylesheet">
-
-<script src="<%=request.getContextPath()%>/resources/admin/js/confAdmin.js"></script>
-<script src="<%=request.getContextPath()%>/resources/admin/js/admin_login.js"></script>
-
+<%@ include file="/WEB-INF/views/includeCssJs.jsp"%>
 <style>
 body {
 	height: 100vh;
@@ -80,39 +66,45 @@ body {
 </style>
 </head>
 
-<body ng-controller="AdminLoginController">
+<body ng-controller="AdminLoginController" ng-cloak>
 	<div class="login-container">
 		<div class="text-center mb-4">
-			<img src="<%=request.getContextPath()%>/resources/front/img/logos/logo-ShreeKubereshwarMahadev-3.png" alt="Logo"
-				style="height: 80px;">
+			<img
+				src="<%=request.getContextPath()%>/resources/front/img/logos/logo-ShreeKubereshwarMahadev-3.png"
+				alt="Logo">
 		</div>
-		<form>
+		<form name="myForm" novalidate>
 			<div class="mb-3">
 				<div class="input-group">
 					<span class="input-group-text bg-white text-secondary"> <i
 						class="fas fa-user"></i>
-					</span> <input type="text" class="form-control" id="username"
-						ng-model="username" placeholder="Username" required>
+					</span> <input type="text" class="form-control" id="emailId"
+						name="emailId" ng-model="entity.emailId" placeholder="Username"
+						required>
 				</div>
+				<small class="text-danger"
+					ng-if="myForm.emailId.$touched && myForm.emailId.$invalid">
+					This field is required. </small>
 			</div>
 			<div class="mb-3">
 				<div class="input-group">
 					<span class="input-group-text bg-white text-secondary"> <i
 						class="fas fa-lock"></i>
 					</span> <input type="password" class="form-control" id="password"
-						ng-model="password" placeholder="Password" required ng-keypress="$event.which === 13 && login()">
+						name="password" ng-model="entity.password" placeholder="Password"
+						required ng-keypress="$event.which === 13 && login()">
 				</div>
+				<small class="text-danger"
+					ng-if="myForm.password.$touched && myForm.password.$invalid">
+					This field is required. </small>
 			</div>
 			<button class="login-btn" ng-click="login()">Login</button>
-			<%-- <a href="<%=request.getContextPath()%>/manageKuberbhandari/forgotPassword" class="forgot-password">Forgot
-				Password?</a> --%>
+
 		</form>
 	</div>
-
-	<!-- Bootstrap -->
+<!-- ✅ Place this near the top of <body> -->
+	<toaster-container toaster-options="{'time-out': 1000}"></toaster-container>
 	<script
-		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-	
-
+		src="<%=request.getContextPath()%>/resources/admin/js/admin_login.js"></script>
 </body>
 </html>
