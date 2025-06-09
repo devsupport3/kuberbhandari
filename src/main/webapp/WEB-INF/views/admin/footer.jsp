@@ -8,13 +8,13 @@
 <title>Footer</title>
 
 <!-- Bootstrap CSS -->
-<link
+<!-- <link
 	href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
 	rel="stylesheet" />
-<!-- Font Awesome for Icons -->
+Font Awesome for Icons
 <link
 	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-	rel="stylesheet" />
+	rel="stylesheet" /> -->
 
 <style>
 /* Ensure html and body take full height */
@@ -56,8 +56,8 @@ body {
 </style>
 
 <!-- AngularJS -->
-<script
-	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+<!-- <script
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script> -->
 
 </head>
 <body>
@@ -83,8 +83,8 @@ body {
 	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 	<script
 		src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-	<script
-		src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+	<!-- <script
+		src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> -->
 
 	<script>
 		$(document).ready(function() {

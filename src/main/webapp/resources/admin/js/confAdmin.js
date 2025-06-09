@@ -6578,10 +6578,20 @@ app.controller('impDateController', function($scope, $http) {
 });
 
 /*************************************** Admin sidebar  *****************************************/
-app.controller('SidebarController', function($scope, $http, $window, pagePermissionService) {
+app.controller('SidebarController', function($scope, $http, $window, pagePermissionService, $location) {
 
 	$scope.adminMasterPages = [];
 	$scope.adminNonMasterPages = [];
+	
+	$scope.isActive = function(routeSegment) {
+	      return $location.absUrl().indexOf(routeSegment) !== -1;
+	  };
+		
+	  $scope.hasPage = function (pageName) {
+	  	return $scope.adminMasterPages.some(function (page) {
+	  		return page.pageName === pageName;
+	  	});
+	  };
 
 	$scope.getPagePermission = function() {
 		$http.get(adminUrl + 'GetCurrentUserPagePermission')
@@ -6602,6 +6612,7 @@ app.controller('SidebarController', function($scope, $http, $window, pagePermiss
 				$scope.adminNonMasterPages = [];
 			});
 	};
+	$scope.getPagePermission();
 });
 
 /***************************************Admin Header  *****************************************/

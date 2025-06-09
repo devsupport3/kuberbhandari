@@ -6,9 +6,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Daily Darshan</title>
-
+<%@ include file="/WEB-INF/views/includeCssJs.jsp"%>
 <!-- Add Bootstrap and Font Awesome CSS -->
-<link
+<%-- <link
 	href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
 	rel="stylesheet" />
 <link
@@ -23,7 +23,7 @@
 	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
 
 <script
-	src="<%=request.getContextPath()%>/resources/admin/js/confAdmin.js"></script>
+	src="<%=request.getContextPath()%>/resources/admin/js/confAdmin.js"></script> --%>
 
 <!-- CKEditor Start-->
 <script type="text/javascript"

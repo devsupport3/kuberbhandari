@@ -7,9 +7,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard</title>
+<%@ include file="/WEB-INF/views/includeCssJs.jsp"%>
 
 <!-- Bootstrap CSS -->
-<link
+<%-- <link
 	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
 	rel="stylesheet">
 <link
@@ -23,7 +24,7 @@
 <script
 	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
 <script
-	src="<%=request.getContextPath()%>/resources/admin/js/confAdmin.js"></script>
+	src="<%=request.getContextPath()%>/resources/admin/js/confAdmin.js"></script> --%>
 
 <style>
 body {

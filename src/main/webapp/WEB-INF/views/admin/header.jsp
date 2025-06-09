@@ -9,10 +9,10 @@
 <title>Header</title>
 
 <!-- AngularJS -->
-<script
+<%-- <script
 	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
 <script
-	src="<%=request.getContextPath()%>/resources/admin/js/confAdmin.js"></script>
+	src="<%=request.getContextPath()%>/resources/admin/js/confAdmin.js"></script> --%>
 <%-- <script
 	src="<%=request.getContextPath()%>/resources/admin/js/admin_header.js"></script> --%>
 
@@ -126,14 +126,14 @@ body {
 <body ng-controller="headerCtrl">
 
 	<!-- Navbar -->
-	<nav class="navbar" style="margin-top: -73px;">
+	<nav class="navbar">
 
 		<!-- Logo -->
 		<a class="navbar-brand"
 			href="<%=request.getContextPath()%>/manageKuberbhandari/admin-dashboard">
 			<img
 			src="<%=request.getContextPath()%>/resources/front/img/logos/logo-ShreeKubereshwarMahadev-3.png"
-			alt="Logo" class="logo">
+			alt="Logo" class="logo" style="    object-fit: scale-down;">
 		</a>
 
 		<!-- User Info Dropdown -->
