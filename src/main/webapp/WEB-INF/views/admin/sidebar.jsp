@@ -151,7 +151,7 @@ display: inline-block;
 				<div id="sevaMasterDropdown" class="collapse ps-3">
 					<ul class="nav flex-column">
 						<li class="nav-item">
-							<a class="nav-link text-white" href="<%=request.getContextPath()%>/manageKuberbhandari/admin-seva-type-master">
+							<a class="nav-link text-white" ng-class="{'active': isActive('seva-type-master')}" href="<%=request.getContextPath()%>/manageKuberbhandari/seva-type-master">
 								Seva Type
 							</a>
 						</li>

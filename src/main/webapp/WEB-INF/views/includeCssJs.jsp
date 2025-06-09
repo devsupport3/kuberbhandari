@@ -13,6 +13,6 @@
 <script src="<%=request.getContextPath()%>/resources/supports/js/loading-bar.min.js"></script>
 
 <script src="<%=request.getContextPath()%>/resources/admin/js/confAdmin.js"></script>
-<script src="<%=request.getContextPath()%>/resources/admin/js/commonService.js"></script>
-<script src="<%=request.getContextPath()%>/resources/admin/js/apiUrlService.js"></script>
-<script src="<%=request.getContextPath()%>/resources/admin/js/pageUrlService.js"></script>
+<script src="<%=request.getContextPath()%>/resources/admin/js/services/commonService.js"></script>
+<script src="<%=request.getContextPath()%>/resources/admin/js/services/apiUrlService.js"></script>
+<script src="<%=request.getContextPath()%>/resources/admin/js/services/pageUrlService.js"></script>

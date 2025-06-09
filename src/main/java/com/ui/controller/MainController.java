@@ -302,6 +302,19 @@ public class MainController {
 		return "admin/admin_login";
 	}
 
+	
+	@GetMapping("/manageKuberbhandari/seva-type-master")
+	public String sevaTypeMaster(HttpSession session) {
+		User user = (User) session.getAttribute("adminUser");
+
+		if (user != null) {
+			logger.debug("Session details - ID: {}, Role: {}, Status: {}", user.getUserId());
+			return "admin/seva_type_master";
+		}
+		return "admin/seva_type_master";
+	}
+	
+	
 	@GetMapping("/manageKuberbhandari/admin-seva")
 	public String adminSeva(HttpSession session) {
 		User user = (User) session.getAttribute("adminUser");

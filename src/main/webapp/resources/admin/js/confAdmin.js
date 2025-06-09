@@ -1,4 +1,4 @@
-var app = angular.module("kuberbhandari", ['ngAnimate', 'toaster','chieffancypants.loadingBar']);
+var app = angular.module("kuberbhandari", ['ngAnimate', 'toaster', 'chieffancypants.loadingBar']);
 
 var url = "/kuberbhandari/";
 var adminUrl = "/kuberbhandari/manageKuberbhandari/";
@@ -6582,16 +6582,16 @@ app.controller('SidebarController', function($scope, $http, $window, pagePermiss
 
 	$scope.adminMasterPages = [];
 	$scope.adminNonMasterPages = [];
-	
+
 	$scope.isActive = function(routeSegment) {
-	      return $location.absUrl().indexOf(routeSegment) !== -1;
-	  };
-		
-	  $scope.hasPage = function (pageName) {
-	  	return $scope.adminMasterPages.some(function (page) {
-	  		return page.pageName === pageName;
-	  	});
-	  };
+		return $location.absUrl().indexOf(routeSegment) !== -1;
+	};
+
+	$scope.hasPage = function(pageName) {
+		return $scope.adminMasterPages.some(function(page) {
+			return page.pageName === pageName;
+		});
+	};
 
 	$scope.getPagePermission = function() {
 		$http.get(adminUrl + 'GetCurrentUserPagePermission')
@@ -6614,6 +6614,119 @@ app.controller('SidebarController', function($scope, $http, $window, pagePermiss
 	};
 	$scope.getPagePermission();
 });
+
+
+// Add the fileModel directive
+app.directive('fileModel', ['$parse', function($parse) {
+	return {
+		restrict: 'A',
+		link: function(scope, element, attrs) {
+			var model = $parse(attrs.fileModel);
+			var modelSetter = model.assign;
+			element.bind('change', function() {
+				scope.$apply(function() {
+					modelSetter(scope, element[0].files[0]);
+				});
+			});
+		}
+	};
+}]);
+
+app.controller('sevaTypeMasterController', function($scope, commonService, apiUrlService) {
+	$scope.sevaTypeList = [];
+	$scope.entity = {};
+	$scope.isEditMode = false;
+
+	$scope.loadSevaTypes = function() {
+		commonService.runWithLoader(() =>
+			apiUrlService.getAllSevaTypes().then(res => {
+				if (res.data.success) $scope.sevaTypeList = res.data.data;
+				else commonService.notify.error("Error", res.data.message);
+			})
+		);
+	};
+
+	$scope.openAddModal = function() {
+		$scope.isEditMode = false;
+		  $scope.resetFormAndCropper();
+		$('#sevaTypeModal').modal('show');
+	};
+	$scope.resetFormAndCropper = function(defaults) {
+	    $scope.entity = angular.extend({
+	        isActive: true,
+	        imageFile: null,
+	        imagePreview: null,
+	        cropData: null
+	    }, defaults || {});
+
+	    $scope.showCropper = !!$scope.entity.imagePreview;
+
+	    const cropperEl = document.querySelector('image-cropper');
+	    if (cropperEl && cropperEl.resetCropper) {
+	        cropperEl.resetCropper($scope.entity.imagePreview);
+	    }
+
+	    if ($scope.sevaForm) {
+	        $scope.sevaForm.$setPristine();
+	        $scope.sevaForm.$setUntouched();
+	    }
+	};
+
+	
+	$scope.openEditModal = function(item) {
+		$scope.resetFormAndCropper();
+		$scope.isEditMode = true;
+		$scope.entity = angular.copy(item);
+		$('#sevaTypeModal').modal('show');
+	};
+
+	$scope.save = function() {
+		commonService.touchAllFields($scope.sevaForm);
+		if ($scope.sevaForm.$invalid) return;
+
+		const formData = new FormData();
+		const data = {
+			sevaTypeId: $scope.entity.sevaTypeId || null,
+			sevaTypeName: $scope.entity.sevaTypeName,
+			description: $scope.entity.description,
+			isActive: $scope.entity.isActive || false
+		};
+		formData.append("sevaTypeStr", JSON.stringify(data));
+
+		const cropperEl = document.querySelector('image-cropper');
+		if (cropperEl && cropperEl.getCropBlob) {
+			cropperEl.getCropBlob(blob => {
+				if (blob) {
+					formData.append("file", blob, "cropped_image.jpg"); // ✅ filename is JPG
+					Object.entries($scope.entity.cropData || {}).forEach(([key, val]) => {
+						formData.append(key, val);
+					});
+
+					debugger
+					const promise = $scope.isEditMode
+						? apiUrlService.updateSevaType(formData)
+						: apiUrlService.addSevaType(formData);
+
+					commonService.runWithLoader(() =>
+						promise.then(res => {
+							if (res.data.success) {
+								commonService.notify.success("Success", res.data.message);
+								$('#sevaTypeModal').modal('hide');
+								$scope.loadSevaTypes();
+							} else {
+								commonService.notify.error("Error", res.data.message);
+							}
+						})
+					);
+				}
+			});
+		} else {
+			commonService.notify.error("Image is required. Please upload and crop.");
+		}
+	};
+	$scope.loadSevaTypes();
+});
+
 
 /***************************************Admin Header  *****************************************/
 app.controller('headerCtrl', function($scope, $http, $window, $location) {

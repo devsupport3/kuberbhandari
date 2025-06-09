@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
@@ -70,16 +71,13 @@ public class SevaController {
 	private static final Logger logger = LoggerFactory.getLogger(SevaController.class);
 
 	@GetMapping("/getAllSevaTypes")
-	public ResponseEntity<List<SevaType>> getAllSevaTypes() {
-		logger.info("Fetching all SevaTypes");
-
+	public ResponseEntity<ApiResponse<List<SevaType>>> getAllSevaTypes() {
 		try {
 			List<SevaType> sevaTypes = sevaTypeDAO.getAllSevaTypes();
-			return ResponseEntity.ok(sevaTypes);
-
+			return ResponseEntity.ok(new ApiResponse<>(true, "Fetched successfully", sevaTypes));
 		} catch (Exception e) {
-			logger.error("Error fetching all seva types", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(new ApiResponse<>(false, "Error fetching seva types", null));
 		}
 	}
 
@@ -119,113 +117,67 @@ public class SevaController {
 		}
 	}
 
+
 	@PostMapping("/addSevaType")
-	public ResponseEntity<SevaType> addSevaType(@RequestParam(value = "sevaTypeStr") String sevaTypeStr,
-			@RequestParam(value = "file", required = false) MultipartFile image, int valuex, int valuey, int valuew,
-			int valueh, HttpSession session, HttpServletRequest request) {
+	public ResponseEntity<ApiResponse<SevaType>> addSevaType(@RequestParam("sevaTypeStr") String sevaTypeStr,
+			@RequestParam(value = "file", required = false) MultipartFile image,
+			@RequestParam(value = "valuex", required = false) Double valuex,
+			@RequestParam(value = "valuey", required = false) Double valuey,
+			@RequestParam(value = "valuew", required = false) Double valuew,
+			@RequestParam(value = "valueh", required = false) Double valueh,
+			@RequestParam(value = "previewWidth", required = false) Double previewWidth,
+			@RequestParam(value = "previewHeight", required = false) Double previewHeight, HttpSession session,
+			HttpServletRequest request) {
+
+		int adminLoginUserId = (int) session.getAttribute("adminLoginUserId");
+		if (adminLoginUserId <= 0) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Unauthorized", null));
+		}
 
 		Gson gson = new Gson();
 		SevaType sevaType = gson.fromJson(sevaTypeStr, SevaType.class);
 
-		logger.info("Adding new SevaType: {}", sevaType);
-
-		int adminLoginUserId = (int) session.getAttribute("adminLoginUserId");
-		if (adminLoginUserId > 0) {
-			if (sevaType == null || sevaType.getSevaTypeName() == null || sevaType.getSevaTypeName().isEmpty()) {
-				logger.error("Seva type name cannot be null or empty");
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-			}
-			String IpAddress = request.getHeader("X-FORWARDED-FOR");
-			if (IpAddress == null) {
-				IpAddress = request.getRemoteAddr();
-			}
-			try {
-				// Check if image is uploaded or not
-				if (image != null && !image.isEmpty()) {
-					String image1 = "";
-					try {
-						byte[] bytes = image.getBytes();
-
-						File dir = new File(request.getSession().getServletContext().getRealPath("")
-								+ "/resources/front/demo-images/imgseva");
-
-						if (!dir.exists())
-							dir.mkdirs();
-
-						String path = request.getSession().getServletContext()
-								.getRealPath("/resources/front/demo-images/imgseva/");
-						File uploadfile = new File(path + File.separator + image.getOriginalFilename());
-
-						ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-						try {
-							BufferedImage image2 = ImageIO.read(image.getInputStream());
-							System.out.println("Image size: " + image2.getWidth() + "x" + image2.getHeight());
-							System.out.println("Crop coordinates: x=" + valuex + ", y=" + valuey + ", width=" + valuew
-									+ ", height=" + valueh);
-
-							BufferedImage img = ImageIO.read(in);
-
-							int imgWidth = img.getWidth();
-							int imgHeight = img.getHeight();
-
-							// Validate cropping bounds
-							int cropWidth = Math.min(valuew, imgWidth - valuex);
-							int cropHeight = Math.min(valueh, imgHeight - valuey);
-
-							if (cropWidth <= 0 || cropHeight <= 0) {
-								throw new IllegalArgumentException("Invalid crop dimensions.");
-							}
-
-							BufferedImage subImage = img.getSubimage(valuex, valuey, cropWidth, cropHeight);
-
-							Image scaledImage = img.getScaledInstance(cropWidth, cropHeight, Image.SCALE_SMOOTH);
-							Graphics2D drawer = subImage.createGraphics();
-							drawer.setComposite(AlphaComposite.Src);
-							drawer.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-									RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-							drawer.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-							drawer.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-							drawer.drawImage(scaledImage, 0, 0, null);
-							drawer.dispose();
-							ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-							ImageIO.write(subImage, "jpg", buffer);
-							bytes = buffer.toByteArray();
-						} catch (IOException e) {
-						}
-
-						BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(
-								new FileOutputStream(uploadfile));
-						bufferedOutputStream.write(bytes);
-						bufferedOutputStream.close();
-
-						sevaType.setImage(image.getOriginalFilename());
-
-					} catch (Exception e) {
-						logger.error("Error processing image", e);
-						return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-					}
-				} else {
-					// No image uploaded, set image as null
-					sevaType.setImage(null);
-				}
-
-				// Set common properties
-				sevaType.setCreatedBy(adminLoginUserId);
-				sevaType.setIpAddress(IpAddress);
-				SevaType savedSevaType = sevaTypeDAO.addSevaType(sevaType);
-
-				if (savedSevaType.getSevaTypeId() > 0) {
-					return ResponseEntity.status(HttpStatus.CREATED).body(savedSevaType);
-				}
-				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-
-			} catch (Exception e) {
-				logger.error("Error adding new sevaType", e);
-				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-			}
+		if (sevaType == null || sevaType.getSevaTypeName() == null || sevaType.getSevaTypeName().isEmpty()) {
+			return ResponseEntity.badRequest().body(new ApiResponse<>(false, "SevaType name is required", null));
 		}
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+
+		try {
+			if (image != null && !image.isEmpty()) {
+				String uploadDirPath = request.getSession().getServletContext().getRealPath("/resources/front/demo-images/imgseva/");
+				String imagePath = ImageCrop.saveAndCropImage(
+				    image, valuex, valuey, valuew, valueh,
+				    previewWidth, previewHeight,
+				    uploadDirPath
+				);
+				sevaType.setImage(imagePath);
+
+			}
+
+			sevaType.setCreatedBy(adminLoginUserId);
+			sevaType.setIpAddress(getClientIp(request));
+
+			SevaType saved = sevaTypeDAO.addSevaType(sevaType);
+
+			if (saved != null && saved.getSevaTypeId() > 0) {
+				return ResponseEntity.status(HttpStatus.CREATED)
+						.body(new ApiResponse<>(true, "SevaType added successfully", saved));
+			} else {
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+						.body(new ApiResponse<>(false, "Failed to save SevaType", null));
+			}
+		} catch (Exception e) {
+			logger.error("Failed to add SevaType", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(new ApiResponse<>(false, "Server error: " + e.getMessage(), null));
+		}
 	}
+
+	private String getClientIp(HttpServletRequest request) {
+		String ip = request.getHeader("X-FORWARDED-FOR");
+		return (ip != null && !ip.isEmpty()) ? ip : request.getRemoteAddr();
+	}
+	
+	
 
 	@PostMapping("/updateSevaType")
 	public ResponseEntity<SevaType> updateSevaType(int id, @RequestParam("sevaTypeStr") String sevaTypeStr,
