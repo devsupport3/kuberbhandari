@@ -85,64 +85,74 @@ public class SevaTypeDAOImpl implements SevaTypeDAO {
 
 	@Override
 	public SevaType addSevaType(SevaType sevaType) {
-		logger.info("Inside Add SevaType Impl");
+	    logger.info("Inside Add SevaType Impl");
 
-		String sql = "INSERT INTO seva_type (seva_type_name, description, image, status, created_by, ip_address) "
-				+ "VALUES (?, ?, ?, ?, ?, ?)";
+	    String sql = "INSERT INTO seva_type (seva_type_name, description, image, status, created_by, ip_address) "
+	            + "VALUES (?, ?, ?, ?, ?, ?)";
 
-		try (Connection conn = dataSource.getConnection();
-				PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+	    try (Connection conn = dataSource.getConnection();
+	         PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-			ps.setString(1, sevaType.getSevaTypeName());
-			ps.setString(2, sevaType.getDescription());
-			ps.setString(3, sevaType.getImage());
-			ps.setString(4, sevaType.getStatus());
-			ps.setInt(5, sevaType.getCreatedBy());
-			ps.setString(6, sevaType.getIpAddress());
+	        bindSevaTypeParams(ps, sevaType, false);
+	        ps.executeUpdate();
 
-			ps.executeUpdate();
-			logger.info("Seva type added successfully");
-			// Retrieve the generated primary key
-			try (ResultSet rs = ps.getGeneratedKeys()) {
-				if (rs.next()) {
-					int generatedId = rs.getInt(1); // Assuming 'id' is the first column
-					sevaType.setSevaTypeId(generatedId); // Set the generated ID back to the object if needed
-					logger.info("SevaType added successfully with ID: " + generatedId);
-				}
-			}
-		} catch (SQLException e) {
-			logger.error("Error adding seva type", e);
-			throw new RuntimeException("Error adding seva type", e);
-		}
-		return sevaType;
+	        try (ResultSet rs = ps.getGeneratedKeys()) {
+	            if (rs.next()) {
+	                int generatedId = rs.getInt(1);
+	                sevaType.setSevaTypeId(generatedId);
+	                logger.info("SevaType added successfully with ID: " + generatedId);
+	            }
+	        }
+
+	    } catch (SQLException e) {
+	        logger.error("Error adding seva type", e);
+	        throw new RuntimeException("Error adding seva type", e);
+	    }
+
+	    return sevaType;
 	}
+
 
 	@Override
-	public void updateSevaType(SevaType sevaType) {
-		logger.info("Inside Edit SevaType Impl");
+	public boolean updateSevaType(SevaType sevaType) {
+	    logger.info("Inside Edit SevaType Impl");
 
-		String sql = "UPDATE seva_type SET seva_type_name = ?, description = ?, image = ?, status = ?, created_by = ?, created_date = ?, ip_address = ? "
-				+ "WHERE seva_type_id = ?";
+	    String sql = "UPDATE seva_type SET seva_type_name = ?, description = ?, image = ?, status = ?, created_by = ?, created_date = ?, ip_address = ? "
+	            + "WHERE seva_type_id = ?";
 
-		try (Connection conn = dataSource.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+	    try (Connection conn = dataSource.getConnection();
+	         PreparedStatement ps = conn.prepareStatement(sql)) {
 
-			ps.setString(1, sevaType.getSevaTypeName());
-			ps.setString(2, sevaType.getDescription());
-			ps.setString(3, sevaType.getImage());
-			ps.setString(4, sevaType.getStatus());
-			ps.setInt(5, sevaType.getCreatedBy());
-			ps.setTimestamp(6, java.sql.Timestamp.valueOf(sevaType.getCreatedDate()));
-			ps.setString(7, sevaType.getIpAddress());
-			ps.setInt(8, sevaType.getSevaTypeId());
+	        bindSevaTypeParams(ps, sevaType, true);
 
-			ps.executeUpdate();
-			logger.info("Seva type updated successfully");
-		} catch (SQLException e) {
-			logger.error("Error updating seva type", e);
-			throw new RuntimeException("Error updating seva type", e);
-		}
+	        int rowsAffected = ps.executeUpdate();
+	        logger.info("SevaType updated successfully, rows affected: " + rowsAffected);
+	        return rowsAffected > 0;
+
+	    } catch (SQLException e) {
+	        logger.error("Error updating seva type", e);
+	        throw new RuntimeException("Error updating seva type", e);
+	    }
 	}
 
+	private void bindSevaTypeParams(PreparedStatement ps, SevaType sevaType, boolean isUpdate) throws SQLException {
+	    ps.setString(1, sevaType.getSevaTypeName());
+	    ps.setString(2, sevaType.getDescription());
+	    ps.setString(3, sevaType.getImage());
+	    ps.setString(4, sevaType.getStatus());
+	    ps.setInt(5, sevaType.getCreatedBy());
+
+	    if (isUpdate) {
+	        ps.setTimestamp(6, new java.sql.Timestamp(System.currentTimeMillis()));
+	        ps.setString(7, sevaType.getIpAddress());
+	        ps.setInt(8, sevaType.getSevaTypeId());
+	    } else {
+	        ps.setString(6, sevaType.getIpAddress());
+	    }
+	}
+
+	
+	
 	@Override
 	public boolean deleteSevaType(int sevaTypeId) {
 		logger.info("Inside Delete SevaType Impl");

@@ -12,6 +12,13 @@ app.factory('apiUrlService', function($http) {
 				headers: { 'Content-Type': undefined }
 			});
 		},
+		updateSevaType: function(formData) {
+			debugger
+				return $http.post(serverUrl + "updateSevaType", formData, {
+					transformRequest: angular.identity,
+					headers: { 'Content-Type': undefined }
+				});
+			},
 		// ✅ Add this function to fetch all SevaTypes
 		getAllSevaTypes: function() {
 			return $http.get(serverUrl + "getAllSevaTypes");

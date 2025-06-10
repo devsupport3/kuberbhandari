@@ -10,7 +10,7 @@ public interface SevaTypeDAO {
 
 	SevaType addSevaType(SevaType sevaType);
 
-	void updateSevaType(SevaType sevaType);
+	boolean updateSevaType(SevaType sevaType);
 
 	boolean deleteSevaType(int sevaTypeId);
 
