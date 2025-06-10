@@ -6632,7 +6632,7 @@ app.directive('fileModel', ['$parse', function($parse) {
 	};
 }]);
 
-app.controller('sevaTypeMasterController', function($scope, commonService, apiUrlService) {
+app.controller('sevaTypeMasterController', function($scope, commonService, apiUrlService, $location) {
 	$scope.sevaTypeList = [];
 	$scope.entity = {};
 	$scope.isEditMode = false;
@@ -6648,31 +6648,10 @@ app.controller('sevaTypeMasterController', function($scope, commonService, apiUr
 
 	$scope.openAddModal = function() {
 		$scope.isEditMode = false;
-		  $scope.resetFormAndCropper();
+		$scope.resetFormAndCropper();
 		$('#sevaTypeModal').modal('show');
 	};
-	$scope.resetFormAndCropper = function(defaults) {
-	    $scope.entity = angular.extend({
-	        isActive: true,
-	        imageFile: null,
-	        imagePreview: null,
-	        cropData: null
-	    }, defaults || {});
 
-	    $scope.showCropper = !!$scope.entity.imagePreview;
-
-	    const cropperEl = document.querySelector('image-cropper');
-	    if (cropperEl && cropperEl.resetCropper) {
-	        cropperEl.resetCropper($scope.entity.imagePreview);
-	    }
-
-	    if ($scope.sevaForm) {
-	        $scope.sevaForm.$setPristine();
-	        $scope.sevaForm.$setUntouched();
-	    }
-	};
-
-	
 	$scope.openEditModal = function(item) {
 		$scope.resetFormAndCropper();
 		$scope.isEditMode = true;
@@ -6694,6 +6673,10 @@ app.controller('sevaTypeMasterController', function($scope, commonService, apiUr
 		formData.append("sevaTypeStr", JSON.stringify(data));
 
 		const cropperEl = document.querySelector('image-cropper');
+		if ((!cropperEl || !$scope.entity.imageFile) && !$scope.entity.imagePreview) {
+				$scope.submitForm(formData);
+			return;
+		}
 		if (cropperEl && cropperEl.getCropBlob) {
 			cropperEl.getCropBlob(blob => {
 				if (blob) {
@@ -6701,29 +6684,77 @@ app.controller('sevaTypeMasterController', function($scope, commonService, apiUr
 					Object.entries($scope.entity.cropData || {}).forEach(([key, val]) => {
 						formData.append(key, val);
 					});
-
-					debugger
-					const promise = $scope.isEditMode
-						? apiUrlService.updateSevaType(formData)
-						: apiUrlService.addSevaType(formData);
-
-					commonService.runWithLoader(() =>
-						promise.then(res => {
-							if (res.data.success) {
-								commonService.notify.success("Success", res.data.message);
-								$('#sevaTypeModal').modal('hide');
-								$scope.loadSevaTypes();
-							} else {
-								commonService.notify.error("Error", res.data.message);
-							}
-						})
-					);
+					$scope.submitForm(formData); // proceed to submit
 				}
 			});
 		} else {
 			commonService.notify.error("Image is required. Please upload and crop.");
 		}
 	};
+
+	$scope.submitForm = function(formData) {
+		const promise = $scope.isEditMode
+			? apiUrlService.updateSevaType(formData)
+			: apiUrlService.addSevaType(formData);
+
+		commonService.runWithLoader(() =>
+			promise.then(res => {
+				if (res.data.success) {
+					commonService.notify.success("Success", res.data.message);
+					$('#sevaTypeModal').modal('hide');
+					$scope.loadSevaTypes();
+				} else {
+					commonService.notify.error("Error", res.data.message);
+				}
+			})
+		);
+	}
+
+	$scope.resetFormAndCropper = function(defaults) {
+		$scope.entity = angular.extend({
+			isActive: true,
+			imageFile: null,
+			imagePreview: null,
+			cropData: null
+		}, defaults || {});
+
+		$scope.showCropper = !!$scope.entity.imagePreview;
+
+		const cropperEl = document.querySelector('image-cropper');
+		if (cropperEl && cropperEl.resetCropper) {
+			cropperEl.resetCropper($scope.entity.imagePreview);
+		}
+
+		if ($scope.sevaForm) {
+			$scope.sevaForm.$setPristine();
+			$scope.sevaForm.$setUntouched();
+		}
+	};
+
+
+	$scope.GetSevaTypeById = function(sevaType) {
+		commonService.runWithLoader(() => {
+			return apiUrlService.getSevaTypeById(sevaType.sevaTypeId).then(res => {
+				if (res.status === 200 && res.data) {
+					$scope.isEditMode = true;
+					$scope.resetFormAndCropper(res.data);
+
+					if (res.data.image) {
+						// ✅ Set the image preview path for the directive to pick up
+						$scope.entity.imagePreview = $location.protocol() + "://" + location.host + url + 'resources/front/demo-images/imgseva/' + res.data.image;
+					}
+					$('#sevaTypeModal').modal('show');
+				} else {
+					commonService.notify.error("Error", "Seva Type not found.");
+				}
+			}, err => {
+				console.error("Error fetching seva type:", err);
+				commonService.notify.error("Error", "Unable to load Seva Type.");
+			});
+		});
+	};
+
+
 	$scope.loadSevaTypes();
 });
 

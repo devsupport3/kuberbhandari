@@ -102,14 +102,13 @@ body {
 												<tr ng-repeat="sevaType in sevaTypeList"
 													style="cursor: pointer">
 													<td ng-click="GetSevaTypeById(sevaType)"
-														title="Update Seva Type" data-bs-toggle="modal"
-														data-bs-target="#updateModal">{{$index + 1}}</td>
+														title="Update Seva Type">{{$index + 1}}</td>
 													<td ng-click="GetSevaTypeById(sevaType)"
-														title="Update Seva Type" data-bs-toggle="modal"
-														data-bs-target="#updateModal">{{sevaType.sevaTypeName ? sevaType.sevaTypeName : '-'}}</td>
+														title="Update Seva Type">{{sevaType.sevaTypeName ||
+														'-'}}</td>
 													<td ng-click="GetSevaTypeById(sevaType)"
-														title="Update Seva Type" data-bs-toggle="modal"
-														data-bs-target="#updateModal">{{sevaType.description ? sevaType.sevaTypeName : '-'}}</td>
+														title="Update Seva Type">{{sevaType.description ||
+														'-'}}</td>
 													<td>
 														<div class="widget-thumb">
 															<a href="#" ng-click="GetSevaTypeById(sevaType)"> <img
@@ -122,6 +121,7 @@ body {
 													<td class="text-center align-middle"><input
 														type="checkbox" ng-model="sevaType.selected"></td>
 												</tr>
+
 											</tbody>
 										</table>
 									</div>

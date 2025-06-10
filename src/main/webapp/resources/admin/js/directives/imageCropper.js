@@ -81,6 +81,47 @@ app.directive('imageCropper', function($timeout) {
                 }
             };
 
+			scope.$watch('imagePreview', function(newVal) {
+			    if (newVal) {
+			        // Set showCropper first to make sure image div is rendered
+			        scope.showCropper = true;
+
+			        // Then in the next digest cycle find the image element
+			        $timeout(() => {
+			            const image = element.find('img')[0];
+			            if (!image) {
+			                console.warn('Image element not found yet');
+			                return;
+			            }
+
+			            // Destroy previous cropper if any
+			            if (cropper) {
+			                cropper.destroy();
+			                cropper = null;
+			            }
+
+			            // Initialize cropper on image load
+			            image.onload = function() {
+			                cropper = new Cropper(image, {
+			                    aspectRatio: 1,
+			                    viewMode: 1,
+			                    movable: true,
+			                    zoomable: true
+			                });
+			            };
+
+			            // Note: image.src is set automatically by ng-src binding
+			        }, 0);
+			    } else {
+			        scope.showCropper = false;
+			        if (cropper) {
+			            cropper.destroy();
+			            cropper = null;
+			        }
+			    }
+			});
+
+			
             element[0].getCropBlob = scope.getCropBlob;
 
             // Expose reset function on the DOM element so parent can call it:

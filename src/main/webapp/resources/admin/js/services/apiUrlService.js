@@ -15,6 +15,9 @@ app.factory('apiUrlService', function($http) {
 		// ✅ Add this function to fetch all SevaTypes
 		getAllSevaTypes: function() {
 			return $http.get(serverUrl + "getAllSevaTypes");
-		}
+		},
+		getSevaTypeById: function(id) {
+		    return $http.get(serverUrl + "getSevaTypeById/" + id);
+		}		
 	};
 });
