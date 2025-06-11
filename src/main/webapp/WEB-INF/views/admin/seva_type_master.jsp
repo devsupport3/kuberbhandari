@@ -14,6 +14,20 @@
 
 
 <style>
+.swal2-icon-show {
+	width: 4em !important;
+	height: 4em !important;
+	margin: 1.5em auto .6em !important;
+}
+
+.swal2-title, .swal2-html-container {
+	padding: inherit !important;
+}
+
+.swal2-actions {
+	margin-top: 0px !important;
+}
+
 body {
 	font-family: Arial, sans-serif;
 	background-color: #f8f9fa;
@@ -96,9 +110,10 @@ body {
 													<th>Description</th>
 													<th>Image</th>
 													<th><button type="button" id="Delete" name="submit"
-											class="btn btn-danger text-danger text-center" style="color:red !important" ng-click="deleteSevaType()">
-											<i class="fas fa-trash"></i>
-										</button></th>
+															class="btn btn-danger text-danger text-center"
+															style="color: red !important" ng-click="deleteSevaType()">
+															<i class="fas fa-trash"></i>
+														</button></th>
 												</tr>
 											</thead>
 											<tbody>
@@ -107,17 +122,17 @@ body {
 													<td ng-click="GetSevaTypeById(sevaType)"
 														title="Update Seva Type">{{$index + 1}}</td>
 													<td ng-click="GetSevaTypeById(sevaType)"
-														title="Update Seva Type">{{sevaType.name ||
-														'-'}}</td>
+														title="Update Seva Type">{{sevaType.name || '-'}}</td>
 													<td ng-click="GetSevaTypeById(sevaType)"
 														title="Update Seva Type">{{sevaType.description ||
 														'-'}}</td>
 													<td>
 														<div class="widget-thumb">
 															<a href="#" ng-click="GetSevaTypeById(sevaType)"> <img
-																ng-src="<%=request.getContextPath()%>/resources/front/demo-images/imgseva/{{sevaType.image}}"
+																ng-src="{{ sevaType.image ? ('<%=request.getContextPath()%>/resources/front/demo-images/imgseva/' + sevaType.image) : ('<%=request.getContextPath()%>/resources/front/demo-images/no-image.jpeg') }}"
 																alt="image" class="img-thumbnail"
-																style="width: 50px; height: 50px;">
+																style="width: 50px; height: 50px;"
+																onerror="this.onerror=null; this.src='<%=request.getContextPath()%>/resources/front/demo-images/no-image.jpeg';">
 															</a>
 														</div>
 													</td>
@@ -149,22 +164,22 @@ body {
 							</div>
 
 							<div class="modal-body row">
-							<div class="col-12 col-md-6 mb-3">
-							<label for="name" class="form-label"> Name<span
+								<div class="col-12 col-md-6 mb-3">
+									<label for="name" class="form-label"> Name<span
 										class="text-danger">*</span></label> <input type="text"
 										class="form-control" id="name" name="name"
-										placeholder="Enter Name" ng-model="entity.name"
-										required> <small class="text-danger"
+										placeholder="Enter Name" ng-model="entity.name" required>
+									<small class="text-danger"
 										ng-if="sevaForm.name.$touched && sevaForm.name.$invalid">
 										This field is required. </small>
-							</div>
-							<div class="col-12 col-md-6 mb-3">
-							<label for="img" class="form-label">Upload Image</label>
+								</div>
+								<div class="col-12 col-md-6 mb-3">
+									<label for="img" class="form-label">Upload Image</label>
 									<image-cropper image-file="entity.imageFile"
 										image-preview="entity.imagePreview"
 										crop-data="entity.cropData"></image-cropper>
-							</div>
-								
+								</div>
+
 								<div class="col-12 col-md-6 mb-3">
 									<div class="d-flex">
 										<div class="col-10">
@@ -214,6 +229,8 @@ body {
 	<toaster-container toaster-options="{'time-out': 1000}"></toaster-container>
 	<script
 		src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 	<script
 		src="<%=request.getContextPath()%>/resources/admin/js/directives/imageCropper.js"></script>
 	<script

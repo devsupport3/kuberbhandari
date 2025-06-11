@@ -99,63 +99,77 @@ app.service('crudFormService', function(commonService, $location) {
 		},
 
 		getByIdAndOpenModal: function(options) {
-			// options: { id, apiFn, $scope, imageFolder, modalId, resetFn }
-			commonService.runWithLoader(() => {
-				return options.apiFn(options.id).then(res => {
-					if (res.status === 200 && res.data) {
-						options.$scope.isEditMode = true;
-						options.resetFn.call(null, res.data); // Reset the form
+		    commonService.runWithLoader(() => {
+		        return options.apiFn(options.id).then(res => {
+		            if (res.status === 200 && res.data) {
+		                options.$scope.isEditMode = true;
+		                options.resetFn.call(null, res.data); // Reset the form
 
-						if (res.data.image && options.imageFolder) {
-							const timestamp = new Date().getTime(); // cache buster
-							options.$scope.entity.imagePreview = this.getImageUrl(res.data.image, options.imageFolder) + '?t=' + timestamp;
-						}
+		                const timestamp = new Date().getTime(); // cache buster
+		                if (res.data.image && options.imageFolder) {
+		                    options.$scope.entity.imagePreview = this.getImageUrl(res.data.image, options.imageFolder) + '?t=' + timestamp;
+		                } else if (options.imageFolder) {
+		                    options.$scope.entity.imagePreview = options.imageFolder + '/no-image.jpeg?t=' + timestamp;
+		                } else {
+		                    options.$scope.entity.imagePreview = ''; // Or null
+		                }
 
-						$('#' + options.modalId).modal('show');
-					} else {
-						commonService.notify.error("Error", "Entity not found.");
-					}
-				}, err => {
-					console.error("Error fetching entity:", err);
-					commonService.notify.error("Error", "Unable to load entity.");
-				});
-			});
+		                $('#' + options.modalId).modal('show');
+		            } else {
+		                commonService.notify.error("Error", "Entity not found.");
+		            }
+		        }, err => {
+		            console.error("Error fetching entity:", err);
+		            commonService.notify.error("Error", "Unable to load entity.");
+		        });
+		    });
 		},
+
 		deleteSelected: function($scope, options) {
-			const {
-				listName = 'sevaTypeList',
-				apiDeleteFn, // required: a function like (ids) => apiUrlService.delete('moduleName', ids)
-				onSuccess,
-				confirmMessage = 'Are you sure you want to delete the selected item(s)?',
-				noSelectionMessage = 'Please select at least one item to delete.'
-			} = options;
+		    const {
+		        listName = 'sevaTypeList',
+		        apiDeleteFn, // required: a function like (ids) => apiUrlService.delete('moduleName', ids)
+		        onSuccess,
+		        confirmMessage = 'Do you want to delete the selected record(s)?',
+		        noSelectionMessage = 'Please select at least one item to delete.'
+		    } = options;
 
-			const selectedItems = $scope[listName].filter(item => item.selected);
+		    const selectedItems = $scope[listName].filter(item => item.selected);
 
-			if (selectedItems.length === 0) {
-				commonService.notify.warning("Warning", noSelectionMessage);
-				return;
-			}
+		    if (selectedItems.length === 0) {
+		        commonService.notify.warning("Warning", noSelectionMessage);
+		        return;
+		    }
 
-			if (!confirm(confirmMessage)) {
-				return;
-			}
+		    // SweetAlert2 confirmation dialog
+		    Swal.fire({
+		        title: 'Are you sure?',
+		        text: confirmMessage,
+		        icon: 'warning',
+		        showCancelButton: true,
+		        confirmButtonColor: '#ffa913',
+		        cancelButtonColor: '#ff0a1a',
+		        confirmButtonText: 'Yes, delete it!',
+		        cancelButtonText: 'Cancel'
+		    }).then((result) => {
+		        if (result.isConfirmed) {
+		            const ids = selectedItems.map(item => item.id);
 
-			const ids = selectedItems.map(item => item.id);
-
-			commonService.runWithLoader(() =>
-				apiDeleteFn(ids).then(res => {
-					if (res.data.success) {
-						commonService.notify.success("Success", res.data.message || 'Deleted successfully');
-						onSuccess && onSuccess();
-					} else {
-						commonService.notify.error("Error", res.data.message || 'Delete failed');
-					}
-				}).catch(err => {
-					console.error("Delete error", err);
-					commonService.notify.error("Error", "Failed to delete. Try again.");
-				})
-			);
+		            commonService.runWithLoader(() =>
+		                apiDeleteFn(ids).then(res => {
+		                    if (res.data.success) {
+		                        commonService.notify.success("Success", res.data.message || 'Deleted successfully');
+		                        onSuccess && onSuccess();
+		                    } else {
+		                        commonService.notify.error("Error", res.data.message || 'Delete failed');
+		                    }
+		                }).catch(err => {
+		                    console.error("Delete error", err);
+		                    commonService.notify.error("Error", "Failed to delete. Try again.");
+		                })
+		            );
+		        }
+		    });
 		}
 
 	};
