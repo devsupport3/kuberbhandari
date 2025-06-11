@@ -1,30 +1,39 @@
 app.factory('apiUrlService', function($http) {
 	//	var serverUrl = "http://localhost:8080/api/v1/";
-	var serverUrl = "/kuberbhandari/manageKuberbhandari/";
+	const baseUrl = "/kuberbhandari/manageKuberbhandari/";
+
+	function buildUrl(module, endpoint = '') {
+		return `${baseUrl}${module}/${endpoint}`;
+	}
+
 	return {
 		adminLogin: function(obj) {
-			var link = serverUrl + 'admin-login';
+			var link = baseUrl + 'admin-login';
 			return $http.post(link, obj); // send the login object in request body
 		},
-		addSevaType: function(formData) {
-			return $http.post(serverUrl + "addSevaType", formData, {
+		saveEntity: function(module, formData, isUpdate) {
+			const endpoint = isUpdate ? 'update' : 'add';
+			return $http.post(buildUrl(module, endpoint), formData, {
 				transformRequest: angular.identity,
 				headers: { 'Content-Type': undefined }
 			});
 		},
-		updateSevaType: function(formData) {
-			debugger
-				return $http.post(serverUrl + "updateSevaType", formData, {
-					transformRequest: angular.identity,
-					headers: { 'Content-Type': undefined }
-				});
-			},
-		// ✅ Add this function to fetch all SevaTypes
-		getAllSevaTypes: function() {
-			return $http.get(serverUrl + "getAllSevaTypes");
+
+		getAll: function(module) {
+			return $http.get(buildUrl(module, 'getAll'));
 		},
-		getSevaTypeById: function(id) {
-		    return $http.get(serverUrl + "getSevaTypeById/" + id);
-		}		
+
+		getById: function(module, id) {
+			return $http.get(buildUrl(module, id));
+		},
+		delete: function(module, ids) {
+			return $http({
+				method: 'POST',
+				url: buildUrl(module, 'delete'),
+				data: ids,
+				headers: { 'Content-Type': 'application/json' }
+			});
+		},
+
 	};
 });

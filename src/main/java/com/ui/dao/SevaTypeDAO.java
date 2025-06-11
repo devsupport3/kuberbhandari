@@ -17,5 +17,7 @@ public interface SevaTypeDAO {
 	SevaType getSevaTypeById(int sevaTypeId);
 
 	List<SevaType> getAllActiveSevaTypes();
+	boolean softDeleteByIds(List<Integer> ids);
+
 
 }

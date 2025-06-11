@@ -3,42 +3,46 @@ package com.ui.model;
 public class SevaType {
 
 	// Constructor with all fields
-	public SevaType(int sevaTypeId, String sevaTypeName, String description, String image, String status, int createdBy,
-			String createdDate, String ipAddress) {
-		this.sevaTypeId = sevaTypeId;
-		this.sevaTypeName = sevaTypeName;
+	public SevaType(int id, String name, String description, String image, String status, int createdBy,
+			String createdDate, String ipAddress, boolean isActive,  boolean isDeleted) {
+		this.id = id;
+		this.name = name;
 		this.description = description;
 		this.image = image;
 		this.status = status;
 		this.createdBy = createdBy;
 		this.createdDate = createdDate;
 		this.ipAddress = ipAddress;
+		this.isActive = isActive;
+		this.isDeleted = isDeleted;
 	}
 
 	// Properties
-	private int sevaTypeId;
-	private String sevaTypeName;
+	private int id;
+	private String name;
 	private String description;
 	private String image;
+	private Boolean isActive;
+	private Boolean isDeleted;
 	private String status;
 	private int createdBy;
 	private String createdDate;
 	private String ipAddress;
 
-	public int getSevaTypeId() {
-		return sevaTypeId;
+	public int getId() {
+		return id;
 	}
 
-	public void setSevaTypeId(int sevaTypeId) {
-		this.sevaTypeId = sevaTypeId;
+	public void setId(int id) {
+		this.id = id;
 	}
 
-	public String getSevaTypeName() {
-		return sevaTypeName;
+	public String getName() {
+		return name;
 	}
 
-	public void setSevaTypeName(String sevaTypeName) {
-		this.sevaTypeName = sevaTypeName;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getDescription() {
@@ -87,6 +91,22 @@ public class SevaType {
 
 	public void setIpAddress(String ipAddress) {
 		this.ipAddress = ipAddress;
+	}
+
+	public Boolean getIsActive() {
+		return isActive;
+	}
+
+	public void setIsActive(Boolean isActive) {
+		this.isActive = isActive;
+	}
+
+	public Boolean getIsDeleted() {
+		return isDeleted;
+	}
+
+	public void setIsDeleted(Boolean isDeleted) {
+		this.isDeleted = isDeleted;
 	}
 
 }

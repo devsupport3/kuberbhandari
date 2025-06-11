@@ -8,7 +8,7 @@ app.directive('imageCropper', function($timeout) {
         },
         template: `
             <input type="file" class="form-control" accept="image/*" onchange="angular.element(this).scope().onFileChange(this)">
-            <div ng-if="showCropper">
+            <div ng-if="showCropper" class="mt-2">
                 <img id="imageToCrop" ng-src="{{imagePreview}}" class="img-thumbnail mt-2" style="width: 100%; max-height: 300px;" />
             </div>
         `,

@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -33,16 +34,16 @@ public class SevaTypeDAOImpl implements SevaTypeDAO {
 		logger.info("Fetching all SevaTypes");
 
 		List<SevaType> sevaTypes = new ArrayList<>();
-		String sql = "SELECT * FROM seva_type";
+		String sql = "SELECT * FROM seva_type WHERE is_deleted = FALSE";
 
 		try (Connection conn = dataSource.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
 			try (ResultSet rs = ps.executeQuery()) {
 				while (rs.next()) {
-					SevaType sevaType = new SevaType(rs.getInt("seva_type_id"), rs.getString("seva_type_name"),
+					SevaType sevaType = new SevaType(rs.getInt("id"), rs.getString("name"),
 							rs.getString("description"), rs.getString("image"), rs.getString("status"),
 							rs.getInt("created_by"), rs.getTimestamp("created_date").toString(),
-							rs.getString("ip_address"));
+							rs.getString("ip_address"),rs.getBoolean("is_active"),rs.getBoolean("is_deleted"));
 					sevaTypes.add(sevaType);
 				}
 			}
@@ -61,17 +62,17 @@ public class SevaTypeDAOImpl implements SevaTypeDAO {
 		List<SevaType> sevaTypes = new ArrayList<>();
 		String status = "y";
 
-		String sql = "SELECT * FROM seva_type WHERE status = ?";
+		String sql = "SELECT * FROM seva_type WHERE status = ? AND is_deleted = FALSE";
 
 		try (Connection conn = dataSource.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
 			ps.setString(1, status);
 			try (ResultSet rs = ps.executeQuery()) {
 				while (rs.next()) {
-					SevaType sevaType = new SevaType(rs.getInt("seva_type_id"), rs.getString("seva_type_name"),
+					SevaType sevaType = new SevaType(rs.getInt("id"), rs.getString("name"),
 							rs.getString("description"), rs.getString("image"), rs.getString("status"),
 							rs.getInt("created_by"), rs.getTimestamp("created_date").toString(),
-							rs.getString("ip_address"));
+							rs.getString("ip_address"),rs.getBoolean("is_active"),rs.getBoolean("is_deleted"));
 					sevaTypes.add(sevaType);
 				}
 			}
@@ -87,8 +88,8 @@ public class SevaTypeDAOImpl implements SevaTypeDAO {
 	public SevaType addSevaType(SevaType sevaType) {
 	    logger.info("Inside Add SevaType Impl");
 
-	    String sql = "INSERT INTO seva_type (seva_type_name, description, image, status, created_by, ip_address) "
-	            + "VALUES (?, ?, ?, ?, ?, ?)";
+	    String sql = "INSERT INTO seva_type (name, description, image, status, created_by, is_active, is_deleted, ip_address) "
+	            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
 	    try (Connection conn = dataSource.getConnection();
 	         PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -99,7 +100,7 @@ public class SevaTypeDAOImpl implements SevaTypeDAO {
 	        try (ResultSet rs = ps.getGeneratedKeys()) {
 	            if (rs.next()) {
 	                int generatedId = rs.getInt(1);
-	                sevaType.setSevaTypeId(generatedId);
+	                sevaType.setId(generatedId);
 	                logger.info("SevaType added successfully with ID: " + generatedId);
 	            }
 	        }
@@ -117,8 +118,8 @@ public class SevaTypeDAOImpl implements SevaTypeDAO {
 	public boolean updateSevaType(SevaType sevaType) {
 	    logger.info("Inside Edit SevaType Impl");
 
-	    String sql = "UPDATE seva_type SET seva_type_name = ?, description = ?, image = ?, status = ?, created_by = ?, created_date = ?, ip_address = ? "
-	            + "WHERE seva_type_id = ?";
+	    String sql = "UPDATE seva_type SET name = ?, description = ?, image = ?, status = ?, created_by = ?,  is_active = ?,  created_date = ?, ip_address = ?"
+	            + "WHERE id = ?";
 
 	    try (Connection conn = dataSource.getConnection();
 	         PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -136,62 +137,89 @@ public class SevaTypeDAOImpl implements SevaTypeDAO {
 	}
 
 	private void bindSevaTypeParams(PreparedStatement ps, SevaType sevaType, boolean isUpdate) throws SQLException {
-	    ps.setString(1, sevaType.getSevaTypeName());
+	    ps.setString(1, sevaType.getName());
 	    ps.setString(2, sevaType.getDescription());
 	    ps.setString(3, sevaType.getImage());
 	    ps.setString(4, sevaType.getStatus());
 	    ps.setInt(5, sevaType.getCreatedBy());
-
+	    ps.setBoolean(6, sevaType.getIsActive());
 	    if (isUpdate) {
-	        ps.setTimestamp(6, new java.sql.Timestamp(System.currentTimeMillis()));
-	        ps.setString(7, sevaType.getIpAddress());
-	        ps.setInt(8, sevaType.getSevaTypeId());
+	        ps.setTimestamp(7, new java.sql.Timestamp(System.currentTimeMillis()));
+	        ps.setString(8, sevaType.getIpAddress());
+	        ps.setInt(9, sevaType.getId());
 	    } else {
-	        ps.setString(6, sevaType.getIpAddress());
+	    	ps.setBoolean(7, false); // is_deleted = false when adding
+	        ps.setString(8, sevaType.getIpAddress());
 	    }
 	}
 
 	
+	@Override
+	public boolean softDeleteByIds(List<Integer> ids) {
+	    logger.info("Soft deleting SevaTypes with IDs: {}", ids);
+
+	    if (ids == null || ids.isEmpty()) {
+	        logger.warn("No IDs provided for deletion.");
+	        return false;
+	    }
+
+	    // Dynamically build placeholders (?, ?, ?) for the IN clause
+	    String placeholders = ids.stream().map(id -> "?").collect(Collectors.joining(","));
+	    String sql = "UPDATE seva_type SET is_deleted = true WHERE id IN (" + placeholders + ")";
+
+	    try (Connection conn = dataSource.getConnection();
+	         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+	        for (int i = 0; i < ids.size(); i++) {
+	            ps.setInt(i + 1, ids.get(i));
+	        }
+
+	        int rowsAffected = ps.executeUpdate();
+	        logger.info("Rows marked as deleted: " + rowsAffected);
+	        return rowsAffected > 0;
+
+	    } catch (SQLException e) {
+	        logger.error("Error soft deleting seva types", e);
+	        throw new RuntimeException("Error soft deleting seva types", e);
+	    }
+	}
+
 	
 	@Override
-	public boolean deleteSevaType(int sevaTypeId) {
-		logger.info("Inside Delete SevaType Impl");
+	public boolean deleteSevaType(int id) {
+	    logger.info("Soft deleting SevaType");
 
-		String sql = "Delete from seva_type WHERE seva_type_id = ?";
+	    String sql = "UPDATE seva_type SET is_deleted = TRUE WHERE id = ?";
 
-		try (Connection conn = dataSource.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+	    try (Connection conn = dataSource.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, id);
+	        int rowsAffected = ps.executeUpdate();
 
-			ps.setInt(1, sevaTypeId);
-			int rowsAffected = ps.executeUpdate();
+	        logger.info("Rows affected during delete: {}", rowsAffected);
+	        return rowsAffected > 0;
 
-			if (rowsAffected > 0) {
-				logger.info("Seva type with ID: {} marked as deleted successfully", sevaTypeId);
-				return true;
-			} else {
-				logger.warn("No Seva type found with ID: {}", sevaTypeId);
-				return false;
-			}
-		} catch (SQLException e) {
-			logger.error("Error deleting SevaType with ID: {}", sevaTypeId, e);
-			throw new RuntimeException("Error deleting seva type", e);
-		}
+	    } catch (SQLException e) {
+	        logger.error("Error soft deleting SevaType", e);
+	        throw new RuntimeException("Error soft deleting SevaType", e);
+	    }
 	}
+
 
 	@Override
 	public SevaType getSevaTypeById(int sevaTypeId) {
 		logger.info("Inside Get SevaType By Id Impl");
 
-		String sql = "SELECT * FROM seva_type WHERE seva_type_id = ?";
+		String sql = "SELECT * FROM seva_type WHERE id = ? AND is_deleted = FALSE";
 
 		try (Connection conn = dataSource.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 			ps.setInt(1, sevaTypeId);
 
 			try (ResultSet rs = ps.executeQuery()) {
 				if (rs.next()) {
-					return new SevaType(rs.getInt("seva_type_id"), rs.getString("seva_type_name"),
+					return new SevaType(rs.getInt("id"), rs.getString("name"),
 							rs.getString("description"), rs.getString("image"), rs.getString("status"),
 							rs.getInt("created_by"), rs.getTimestamp("created_date").toString(),
-							rs.getString("ip_address"));
+							rs.getString("ip_address"),rs.getBoolean("is_active"),rs.getBoolean("is_deleted"));
 				}
 			}
 		} catch (SQLException e) {

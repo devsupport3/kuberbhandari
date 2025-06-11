@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.imageio.ImageIO;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,7 +49,7 @@ import com.ui.model.SevaType;
 import com.ui.model.Variation;
 
 @RestController
-@RequestMapping("/manageKuberbhandari")
+@RequestMapping("/manageKuberbhandari/sevaType")
 public class SevaController {
 
 	@Autowired
@@ -70,7 +72,7 @@ public class SevaController {
 
 	private static final Logger logger = LoggerFactory.getLogger(SevaController.class);
 
-	@GetMapping("/getAllSevaTypes")
+	@GetMapping("/getAll")
 	public ResponseEntity<ApiResponse<List<SevaType>>> getAllSevaTypes() {
 		try {
 			List<SevaType> sevaTypes = sevaTypeDAO.getAllSevaTypes();
@@ -80,6 +82,8 @@ public class SevaController {
 					.body(new ApiResponse<>(false, "Error fetching seva types", null));
 		}
 	}
+
+
 
 	@GetMapping("/getAllActiveSevaTypes")
 	public ResponseEntity<List<SevaType>> getAllActiveSevaTypes() {
@@ -99,7 +103,7 @@ public class SevaController {
 		}
 	}
 
-	@GetMapping("/getSevaTypeById/{id}")
+	@GetMapping("/{id}")
 	public ResponseEntity<SevaType> getSevaTypeById(@PathVariable("id") int id) {
 		logger.info("Fetching SevaType with ID: {}", id);
 
@@ -118,8 +122,9 @@ public class SevaController {
 	}
 
 
-/*	@PostMapping("/addSevaType")
-	public ResponseEntity<ApiResponse<SevaType>> addSevaType(@RequestParam("sevaTypeStr") String sevaTypeStr,
+
+	@PostMapping({ "/add", "/update" })
+	public ResponseEntity<ApiResponse<SevaType>> handleSevaType(@RequestParam("sevaTypeStr") String sevaTypeStr,
 			@RequestParam(value = "file", required = false) MultipartFile image,
 			@RequestParam(value = "valuex", required = false) Double valuex,
 			@RequestParam(value = "valuey", required = false) Double valuey,
@@ -129,68 +134,44 @@ public class SevaController {
 			@RequestParam(value = "previewHeight", required = false) Double previewHeight, HttpSession session,
 			HttpServletRequest request) {
 
-		int adminLoginUserId = (int) session.getAttribute("adminLoginUserId");
-		if (adminLoginUserId <= 0) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Unauthorized", null));
-		}
+		int userId = (int) session.getAttribute("adminLoginUserId");
+		if (userId <= 0)
+			return unauthorized();
 
-		Gson gson = new Gson();
-		SevaType sevaType = gson.fromJson(sevaTypeStr, SevaType.class);
-
-		if (sevaType == null || sevaType.getSevaTypeName() == null || sevaType.getSevaTypeName().isEmpty()) {
-			return ResponseEntity.badRequest().body(new ApiResponse<>(false, "SevaType name is required", null));
-		}
+		boolean isUpdate = request.getRequestURI().endsWith("/update");
 
 		try {
-			if (image != null && !image.isEmpty()) {
-				String uploadDirPath = request.getSession().getServletContext().getRealPath("/resources/front/demo-images/imgseva/");
-				String imagePath = ImageCrop.saveAndCropImage(
-				    image, valuex, valuey, valuew, valueh,
-				    previewWidth, previewHeight,
-				    uploadDirPath
-				);
-				sevaType.setImage(imagePath);
+			SevaType sevaType = processRequest(sevaTypeStr, image, valuex, valuey, valuew, valueh, previewWidth,
+					previewHeight, request, userId, isUpdate);
 
-			}
-
-			sevaType.setCreatedBy(adminLoginUserId);
-			sevaType.setIpAddress(getClientIp(request));
-
-			SevaType saved = sevaTypeDAO.addSevaType(sevaType);
-
-			if (saved != null && saved.getSevaTypeId() > 0) {
-				return ResponseEntity.status(HttpStatus.CREATED)
-						.body(new ApiResponse<>(true, "SevaType added successfully", saved));
+			if (isUpdate) {
+				if (sevaType.getId() == 0) {
+					return ResponseEntity.badRequest()
+							.body(new ApiResponse<>(false, "SevaType ID is required for update", null));
+				}
+				boolean updated = sevaTypeDAO.updateSevaType(sevaType);
+				if (updated) {
+					return ResponseEntity.ok(new ApiResponse<>(true, "Record updated successfully", sevaType));
+				}
+				return serverError("Update failed");
 			} else {
-				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-						.body(new ApiResponse<>(false, "Failed to save SevaType", null));
+				SevaType saved = sevaTypeDAO.addSevaType(sevaType);
+				if (saved != null && saved.getId() > 0) {
+					return ResponseEntity.status(HttpStatus.CREATED)
+							.body(new ApiResponse<>(true, "Record added successfully", saved));
+				}
+				return serverError("Failed to save SevaType");
 			}
+
 		} catch (Exception e) {
-			logger.error("Failed to add SevaType", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(new ApiResponse<>(false, "Server error: " + e.getMessage(), null));
+			logger.error(isUpdate ? "Update error" : "Add error", e);
+			return serverError(e.getMessage());
 		}
 	}
 
-	private String getClientIp(HttpServletRequest request) {
-		String ip = request.getHeader("X-FORWARDED-FOR");
-		return (ip != null && !ip.isEmpty()) ? ip : request.getRemoteAddr();
-	}
-	
-	*/
-	private String getClientIp(HttpServletRequest request) {
-		String ip = request.getHeader("X-FORWARDED-FOR");
-		return (ip != null && !ip.isEmpty()) ? ip : request.getRemoteAddr();
-	}
-	private SevaType processSevaTypeRequest(
-			String sevaTypeStr,
-			MultipartFile image,
-			Double valuex, Double valuey, Double valuew, Double valueh,
-			Double previewWidth, Double previewHeight,
-			HttpServletRequest request,
-			int userId,
-			boolean isUpdate
-	) throws IOException {
+	private SevaType processRequest(String sevaTypeStr, MultipartFile image, Double valuex, Double valuey,
+			Double valuew, Double valueh, Double previewWidth, Double previewHeight, HttpServletRequest request,
+			int userId, boolean isUpdate) throws IOException {
 
 		Gson gson = new Gson();
 		SevaType sevaType = gson.fromJson(sevaTypeStr, SevaType.class);
@@ -198,12 +179,9 @@ public class SevaController {
 		// Process image if uploaded
 		if (image != null && !image.isEmpty()) {
 			String uploadDirPath = request.getSession().getServletContext()
-				.getRealPath("/resources/front/demo-images/imgseva/");
-			String imagePath = ImageCrop.saveAndCropImage(
-				image, valuex, valuey, valuew, valueh,
-				previewWidth, previewHeight,
-				uploadDirPath
-			);
+					.getRealPath("/resources/front/demo-images/imgseva/");
+			String imagePath = ImageCrop.saveAndCropImage(image, valuex, valuey, valuew, valueh, previewWidth,
+					previewHeight, uploadDirPath);
 			sevaType.setImage(imagePath);
 		}
 
@@ -213,92 +191,38 @@ public class SevaController {
 
 		return sevaType;
 	}
-	
 
-
-	@PostMapping({"/addSevaType", "/updateSevaType"})
-	public ResponseEntity<ApiResponse<SevaType>> handleSevaType(
-	        @RequestParam("sevaTypeStr") String sevaTypeStr,
-	        @RequestParam(value = "file", required = false) MultipartFile image,
-	        @RequestParam(value = "valuex", required = false) Double valuex,
-	        @RequestParam(value = "valuey", required = false) Double valuey,
-	        @RequestParam(value = "valuew", required = false) Double valuew,
-	        @RequestParam(value = "valueh", required = false) Double valueh,
-	        @RequestParam(value = "previewWidth", required = false) Double previewWidth,
-	        @RequestParam(value = "previewHeight", required = false) Double previewHeight,
-	        HttpSession session,
-	        HttpServletRequest request) {
-
-	    int userId = (int) session.getAttribute("adminLoginUserId");
-	    if (userId <= 0) return unauthorized();
-
-	    boolean isUpdate = request.getRequestURI().endsWith("/updateSevaType");
-
-	    try {
-	        SevaType sevaType = processSevaTypeRequest(
-	                sevaTypeStr, image, valuex, valuey, valuew, valueh,
-	                previewWidth, previewHeight, request, userId, isUpdate
-	        );
-
-	        if (isUpdate) {
-	            if (sevaType.getSevaTypeId() == 0) {
-	                return ResponseEntity.badRequest()
-	                        .body(new ApiResponse<>(false, "SevaType ID is required for update", null));
-	            }
-	            boolean updated = sevaTypeDAO.updateSevaType(sevaType);
-	            if (updated) {
-	                return ResponseEntity.ok(new ApiResponse<>(true, "Recrod updated successfully", sevaType));
-	            }
-	            return serverError("Update failed");
-	        } else {
-	            SevaType saved = sevaTypeDAO.addSevaType(sevaType);
-	            if (saved != null && saved.getSevaTypeId() > 0) {
-	                return ResponseEntity.status(HttpStatus.CREATED)
-	                        .body(new ApiResponse<>(true, "Record added successfully", saved));
-	            }
-	            return serverError("Failed to save SevaType");
-	        }
-
-	    } catch (Exception e) {
-	        logger.error(isUpdate ? "Update error" : "Add error", e);
-	        return serverError(e.getMessage());
-	    }
+	private String getClientIp(HttpServletRequest request) {
+		String ip = request.getHeader("X-FORWARDED-FOR");
+		return (ip != null && !ip.isEmpty()) ? ip : request.getRemoteAddr();
 	}
 
 	private ResponseEntity<ApiResponse<SevaType>> unauthorized() {
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-				.body(new ApiResponse<>(false, "Unauthorized", null));
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Unauthorized", null));
 	}
 
 	private ResponseEntity<ApiResponse<SevaType>> serverError(String message) {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ApiResponse<>(false, "Server error: " + message, null));
 	}
-	
-	@DeleteMapping("/deleteSevaType/{id}")
-	public ResponseEntity<Void> deleteSevaType(@PathVariable("id") int id) {
-		logger.info("Deleting SevaType with ID: {}", id);
 
+	@PostMapping("/delete")
+	public ResponseEntity<ApiResponse<Void>> deleteSevaTypes(@RequestBody List<Integer> ids) {
 		try {
-			SevaType existingSevaType = sevaTypeDAO.getSevaTypeById(id);
-			if (existingSevaType == null) {
-				return ResponseEntity.notFound().build();
-			}
-
-			boolean isDeleted = sevaTypeDAO.deleteSevaType(id);
-
-			if (isDeleted) {
-				logger.info("SevaType with ID: {} deleted successfully", id);
-				return ResponseEntity.noContent().build();
+			boolean result = sevaTypeDAO.softDeleteByIds(ids); // or hard delete
+			if (result) {
+				return ResponseEntity.ok(ApiResponse.success("Deleted successfully", null));
 			} else {
-				logger.warn("Failed to delete SevaType with ID: {}", id);
-				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+				return ResponseEntity.badRequest().body(ApiResponse.failure("Delete failed"));
 			}
 		} catch (Exception e) {
-			logger.error("Error deleting seva type with ID: {}", id, e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(ApiResponse.failure("Error deleting seva types"));
 		}
 	}
+
+
+
 
 	/*********************************************
 	 * Seva Category
