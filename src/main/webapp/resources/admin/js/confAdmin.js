@@ -6645,7 +6645,23 @@ app.controller('sevaTypeMasterController', function($scope, commonService, apiUr
 	$scope.entity = {};
 	$scope.isEditMode = false;
 	$scope.viewMode = false;
+	$scope.selectAll = false;
 
+	$scope.toggleAllSelections = function() {
+	    $scope.sevaTypeList.forEach(item => {
+	        item.selected = $scope.selectAll;
+	    });
+	};
+
+	// Optional: update selectAll state based on individual checkbox changes
+	$scope.updateSelectAllStatus = function() {
+	    $scope.selectAll = $scope.sevaTypeList.every(item => item.selected);
+	};
+	
+	$scope.hasSelectedItems = function () {
+	    return $scope.sevaTypeList.some(item => item.selected);
+	};
+	
 	$scope.loadSevaTypes = function() {
 		crudFormService.load($scope, () => apiUrlService.getAll(moduleName), 'sevaTypeList');
 	};
@@ -6699,17 +6715,19 @@ app.controller('sevaTypeMasterController', function($scope, commonService, apiUr
 		$scope.viewMode = viewOnly;
 	};
 
-	$scope.deleteSevaType = function() {
-		crudFormService.deleteSelected($scope, {
-			listName: 'sevaTypeList',
-			apiDeleteFn: (ids) => apiUrlService.delete(moduleName, ids),
-			onSuccess: () => {
-				$scope.loadSevaTypes();
-			}
-		});
+	$scope.deleteSevaType = function(itemsToDelete) {
+		const isSingleDelete = itemsToDelete && (!Array.isArray(itemsToDelete) || itemsToDelete.length === 1);
+	    crudFormService.deleteSelected($scope, {
+	        listName: 'sevaTypeList',
+	        apiDeleteFn: (ids) => apiUrlService.delete(moduleName, ids),
+	        onSuccess: () => {
+	            $scope.loadSevaTypes();
+	        },
+			confirmMessage: isSingleDelete 
+			            ? 'Do you want to delete this record?' 
+			            : 'Do you want to delete the selected record(s)?'
+			    }, itemsToDelete ? (Array.isArray(itemsToDelete) ? itemsToDelete : [itemsToDelete]) : null);
 	};
-
-
 
 	$scope.loadSevaTypes();
 });

@@ -129,7 +129,7 @@ app.service('crudFormService', function(commonService, $location) {
 			});
 		},
 
-		deleteSelected: function($scope, options) {
+		deleteSelected: function($scope, options, itemsToDelete = null) {
 			const {
 				listName = 'sevaTypeList',
 				apiDeleteFn, // required: a function like (ids) => apiUrlService.delete('moduleName', ids)
@@ -138,8 +138,11 @@ app.service('crudFormService', function(commonService, $location) {
 				noSelectionMessage = 'Please select at least one item to delete.'
 			} = options;
 
-			const selectedItems = $scope[listName].filter(item => item.selected);
-
+			// If explicit items passed, use them, else filter selected
+			  const selectedItems = itemsToDelete && itemsToDelete.length > 0
+			      ? itemsToDelete
+			      : $scope[listName].filter(item => item.selected);
+				  
 			if (selectedItems.length === 0) {
 				commonService.notify.warning("Warning", noSelectionMessage);
 				return;

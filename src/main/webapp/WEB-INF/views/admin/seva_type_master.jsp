@@ -97,7 +97,10 @@ body {
 									</div>
 									<div class="col-1 "
 										style="text-align: end; margin: auto; color: black; font-size: x-large;">
-										<i class="fas fa-plus" ng-click="openAddModal()"></i>
+										<i class="fas fa-trash"
+											style="color: red !important; margin-right: 10px;"
+											ng-if="hasSelectedItems()" ng-click="deleteSevaType()"></i> <i
+											class="fas fa-plus" ng-click="openAddModal()"></i>
 									</div>
 								</div>
 								<div class="card-body">
@@ -106,11 +109,9 @@ body {
 											<thead>
 												<tr>
 													<th>#</th>
-													<th><button type="button" id="Delete" name="submit"
-															class="btn btn-danger text-danger text-center"
-															style="color: red !important" ng-click="deleteSevaType()">
-															<i class="fas fa-trash"></i>
-														</button></th>
+													<th class="text-center"><input type="checkbox"
+														ng-model="selectAll" ng-change="toggleAllSelections()"
+														title="Select All"></th>
 													<th class="text-center">Action</th>
 													<th>Seva Type Name</th>
 													<th>Description</th>
@@ -122,12 +123,13 @@ body {
 													style="cursor: pointer">
 													<td title="Update Seva Type">{{$index + 1}}</td>
 													<td class="text-center align-middle"><input
-														type="checkbox" ng-model="sevaType.selected"></td>
+														type="checkbox" ng-model="sevaType.selected"
+														ng-change="updateSelectAllStatus()"></td>
 													<td title="Actions" class="text-center"><i
 														class="fas fa-pencil text-success"
 														ng-click="GetSevaTypeById(sevaType)"></i> <i
 														class="fas fa-trash" style="color: red !important"
-														ng-click="deleteSevaType()"></i> <i
+														ng-click="deleteSevaType(sevaType)"></i> <i
 														class="fas fa-eye text-primary"
 														ng-click="GetSevaTypeById(sevaType, true)"></i></td>
 													<td ng-click="GetSevaTypeById(sevaType)"
@@ -166,9 +168,8 @@ body {
 						<form name="sevaForm" novalidate ng-submit="save()"
 							enctype="multipart/form-data">
 							<div class="modal-header">
-								<h5 class="modal-title" id="sevaTypeModalLabel">  {{
-    viewMode ? 'View' : (isEditMode ? 'Update' : 'Add')
-  }} Seva Type</h5>
+								<h5 class="modal-title" id="sevaTypeModalLabel">{{ viewMode
+									? 'View' : (isEditMode ? 'Update' : 'Add') }} Seva Type</h5>
 								<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 							</div>
 
@@ -222,7 +223,7 @@ body {
 							</div>
 
 							<div class="modal-footer">
-								<button type="submit"  ng-if="!viewMode"  class="btn btn-primary"
+								<button type="submit" ng-if="!viewMode" class="btn btn-primary"
 									style="background-color: #ffa913; border: none;">{{
 									isEditMode ? 'Update' : 'Add' }}</button>
 								<button type="button" class="btn btn-secondary"
