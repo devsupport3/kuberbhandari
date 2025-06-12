@@ -6578,7 +6578,7 @@ app.controller('impDateController', function($scope, $http) {
 });
 
 /*************************************** Admin sidebar  *****************************************/
-app.controller('SidebarController', function($scope, $http, $window, pagePermissionService, $location) {
+app.controller('SidebarController', function($scope, $http, $window, pagePermissionService, $location, $timeout) {
 
 	$scope.adminMasterPages = [];
 	$scope.adminNonMasterPages = [];
@@ -6603,6 +6603,13 @@ app.controller('SidebarController', function($scope, $http, $window, pagePermiss
 						pagePermissionService.addPermitPages(response.data);
 						$scope.adminMasterPages = pagePermissionService.getAdminMasterPages();
 						$scope.adminNonMasterPages = pagePermissionService.getAdminNonMasterPages();
+						// ✅ Wait for DOM to render, then auto-expand if needed
+						$timeout(function() {
+							if ($scope.isActive('seva-type-master') || $scope.isActive('admin-seva-category-master')) {
+								$('#masterDropdownSidebar').collapse('show');
+								$('#sevaMasterDropdown').collapse('show');
+							}
+						}, 300); // Adjust timeout if necessary
 					}
 				}
 			})
@@ -6637,6 +6644,7 @@ app.controller('sevaTypeMasterController', function($scope, commonService, apiUr
 	$scope.sevaTypeList = [];
 	$scope.entity = {};
 	$scope.isEditMode = false;
+	$scope.viewMode = false;
 
 	$scope.loadSevaTypes = function() {
 		crudFormService.load($scope, () => apiUrlService.getAll(moduleName), 'sevaTypeList');
@@ -6653,6 +6661,10 @@ app.controller('sevaTypeMasterController', function($scope, commonService, apiUr
 		$scope.isEditMode = true;
 		$scope.entity = angular.copy(item);
 		$('#sevaTypeModal').modal('show');
+		// Re-enable all form fields
+		setTimeout(() => {
+			crudFormService.setFormDisabled('sevaTypeModal', false);
+		}, 100);
 	};
 
 	$scope.save = function() {
@@ -6673,18 +6685,21 @@ app.controller('sevaTypeMasterController', function($scope, commonService, apiUr
 		crudFormService.resetFormAndCropper($scope, defaults);
 	};
 
-	$scope.GetSevaTypeById = function(sevaType) {
+	$scope.GetSevaTypeById = function(sevaType, viewOnly = false) {
 		crudFormService.getByIdAndOpenModal({
 			id: sevaType.id,
 			apiFn: (id) => apiUrlService.getById(moduleName, id),
 			$scope: $scope,
 			imageFolder: 'kuberbhandari/resources/front/demo-images/imgseva',
 			modalId: 'sevaTypeModal',
-			resetFn: $scope.resetFormAndCropper
+			resetFn: $scope.resetFormAndCropper,
+			viewOnly: viewOnly
 		});
+		// 🛠️ Fix: Set viewMode flag properly here
+		$scope.viewMode = viewOnly;
 	};
-	
-	$scope.deleteSevaType = function () {
+
+	$scope.deleteSevaType = function() {
 		crudFormService.deleteSelected($scope, {
 			listName: 'sevaTypeList',
 			apiDeleteFn: (ids) => apiUrlService.delete(moduleName, ids),

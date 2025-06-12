@@ -106,21 +106,30 @@ body {
 											<thead>
 												<tr>
 													<th>#</th>
-													<th>Seva Type Name</th>
-													<th>Description</th>
-													<th>Image</th>
 													<th><button type="button" id="Delete" name="submit"
 															class="btn btn-danger text-danger text-center"
 															style="color: red !important" ng-click="deleteSevaType()">
 															<i class="fas fa-trash"></i>
 														</button></th>
+													<th class="text-center">Action</th>
+													<th>Seva Type Name</th>
+													<th>Description</th>
+													<th>Image</th>
 												</tr>
 											</thead>
 											<tbody>
 												<tr ng-repeat="sevaType in sevaTypeList"
 													style="cursor: pointer">
-													<td ng-click="GetSevaTypeById(sevaType)"
-														title="Update Seva Type">{{$index + 1}}</td>
+													<td title="Update Seva Type">{{$index + 1}}</td>
+													<td class="text-center align-middle"><input
+														type="checkbox" ng-model="sevaType.selected"></td>
+													<td title="Actions" class="text-center"><i
+														class="fas fa-pencil text-success"
+														ng-click="GetSevaTypeById(sevaType)"></i> <i
+														class="fas fa-trash" style="color: red !important"
+														ng-click="deleteSevaType()"></i> <i
+														class="fas fa-eye text-primary"
+														ng-click="GetSevaTypeById(sevaType, true)"></i></td>
 													<td ng-click="GetSevaTypeById(sevaType)"
 														title="Update Seva Type">{{sevaType.name || '-'}}</td>
 													<td ng-click="GetSevaTypeById(sevaType)"
@@ -136,8 +145,7 @@ body {
 															</a>
 														</div>
 													</td>
-													<td class="text-center align-middle"><input
-														type="checkbox" ng-model="sevaType.selected"></td>
+
 												</tr>
 
 											</tbody>
@@ -158,8 +166,9 @@ body {
 						<form name="sevaForm" novalidate ng-submit="save()"
 							enctype="multipart/form-data">
 							<div class="modal-header">
-								<h5 class="modal-title" id="sevaTypeModalLabel">{{
-									isEditMode ? 'Update' : 'Add' }} Seva Type</h5>
+								<h5 class="modal-title" id="sevaTypeModalLabel">  {{
+    viewMode ? 'View' : (isEditMode ? 'Update' : 'Add')
+  }} Seva Type</h5>
 								<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 							</div>
 
@@ -175,7 +184,12 @@ body {
 								</div>
 								<div class="col-12 col-md-6 mb-3">
 									<label for="img" class="form-label">Upload Image</label>
-									<image-cropper image-file="entity.imageFile"
+									<!-- Show image preview only in view mode -->
+									<div ng-if="viewMode">
+										<img ng-src="{{entity.imagePreview}}" alt="Preview"
+											class="img-fluid" />
+									</div>
+									<image-cropper ng-if="!viewMode" image-file="entity.imageFile"
 										image-preview="entity.imagePreview"
 										crop-data="entity.cropData"></image-cropper>
 								</div>
@@ -208,7 +222,7 @@ body {
 							</div>
 
 							<div class="modal-footer">
-								<button type="submit" class="btn btn-primary"
+								<button type="submit"  ng-if="!viewMode"  class="btn btn-primary"
 									style="background-color: #ffa913; border: none;">{{
 									isEditMode ? 'Update' : 'Add' }}</button>
 								<button type="button" class="btn btn-secondary"
